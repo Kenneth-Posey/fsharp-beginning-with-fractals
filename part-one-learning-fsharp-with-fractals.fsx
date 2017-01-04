@@ -10,6 +10,15 @@ open System
 // F# uses type inference, so declaring types aren't needed.
 // Functions and objects are both instantiated with "let" syntax.
 
+class demoClass =
+    member this.name = "name"
+    member mutable this.ID = 0
+
+let t = new demoClass()
+t.ID <- 123
+t.name <- "bob"
+
+
 let theQuestionMark = "?"
 let aNormalInt = 123456
 let aNormalFloat = 1.0
@@ -18,8 +27,10 @@ let aUnit = ()
 // Hover your mouse over values to see their different inferred types.
 
 // This is an example function, you write the function name first, then follow with your parameters.
-let addOne parameter = 
-    parameter + 1
+let addOne parameter secondParameter thirdParameter = 
+    let result = parameter + 1
+    let finalLine = "concatenate" + result.ToString() + secondParameter
+    finalLine
 
 // NB: there's no curly braces. F# uses whitespace for determining code blocks
 // NB: there's no "return" statement. F# evaluates and returns the last line in a code block
@@ -28,7 +39,7 @@ let addOne parameter =
 // If there's insufficient information to evaluate the expression and infer the type, then F# will warn you
 // and allow you to specify the type manually.
 
-let castsAnInt (parameter:int) = 
+let castsAnInt (parameter:IDisposable) = 
     let line = "This was an int" + parameter.ToString()
     Console.WriteLine line
 
@@ -47,6 +58,7 @@ let theAnswer = ContainsTheAnswerOfLife.answerOfLife
 // If you need to use an object, like for working with C#, then you can use "new" syntax and constructors
 let myRandom = new Random(42)
 let randomNumber = myRandom.Next(0, Int32.MaxValue)
+randomNumber = myRandom.Next()
 
 // Normally F# uses immutable values. Once a value is declared then it's normally only able to be read. You can designate
 // an value as modifiable by using the "mutable" modifier and the value-setting syntax.
@@ -72,27 +84,41 @@ let oregonOrWashington chosenCity =
 
 let addsTwo p = p + 2
 let addsThree p = p + 3
-let addsFive = addsTwo >> addsThree
+let addsFive = addsTwo >> addsThree >> addsTwo
 
 // This function building process can be used to chain functions together for building shopping cart operations, website processing flows, and so on.
 
-let taxOR price = price * 1.1
-let taxWA price = price * 1.2
+let taxOR price = 
+let taxWA price = 3 * (2 * price + 1)
 let noTax price = price
 
-let calculatesTaxes stateName price = 
-    let calcTax = 
-        match stateName with
-        | "OR" -> taxOR
-        | "WA" -> taxOR >> taxWA
-        | _ -> noTax
+obj.func(obj2.funct2())
 
-    calcTax price
+let calcTax stateName = 
+    match stateName with
+    | "OR" -> taxOR
+    | "WA" -> taxOR >> taxWA >> taxOR
+    // taxWA ( taxOR ( price )) 
+    // 3 * ( 2 * 1 + 1 )
+    | _ -> noTax
+    
+let calculatesTaxes stateName price= 
+    let calc = calcTax stateName 
+    calc price
+
+open System
+open System.Diagnostics
+let testFunction = 
+    try
+        raise(IndexOutOfRangeException("text"))
+    with
+    | :? IndexOutOfRangeException -> "error 1"
+    | _ -> "error 2"
 
 // ============================================================================================================
 // ============================================================================================================
-// ============================================================================================================
-
+//  ============================================================================================================
+ 
 
 // Now that you have a basic idea of syntax, run the follow code to draw a fractal, then experiment to see what you can make!
 
@@ -142,15 +168,26 @@ let draw x y angle length width =
 
 let pi = Math.PI
 
-// Now... your turn to draw
-// The trunk
-draw 250. 50. (pi*(0.5)) 100. 4.
-let x, y = endpoint 250. 50. (pi*(0.5)) 100.
-// first and second branches
-draw x y (pi*(0.5 + 0.3)) 50. 2.
-draw x y (pi*(0.5 - 0.4)) 50. 2.
+let maxDepth = 2
+let ``Testing funct that you can use spaces in the name blah blah blah`` = 321
 
-form.ShowDialog()
+let rec branch (curDepth:int) (x : float) (y : float) (ang : float) (len : float) (wid : float) =
+    // we draw the current segment
+    draw x y ang len wid
+    // if max depth hasn't been reached yet,
+    // we create 2 branches and keep going
+    if (curDepth > maxDepth)
+    then ignore ()
+    else
+        // compute end coordinates of current segment
+        let x',y' = endpoint x y ang len
+        // go left
+        branch (curDepth + 1) x' y' (ang + 0.3) (len * 0.8) (wid * 0.7)
+        // go right
+        branch (curDepth + 1) x' y' (ang - 0.3) (len * 0.8) (wid * 0.7)
+                       
+branch 0 250. 50. (pi*(0.5)) 90.0 10.
+// form.ShowDialog()
 
 
 
